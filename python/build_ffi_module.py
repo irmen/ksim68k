@@ -166,12 +166,12 @@ void m68k_write_memory_32_pd(unsigned int address, unsigned int value) {
 
 """,
                       sources=[
-                          "../Musashi/m68kcpu.c", 
-                          "../Musashi/m68kdasm.c", 
-                          "../Musashi/m68kops.c", 
-                          "../Musashi/softfloat/softfloat.c"
+                          "Musashi/m68kcpu.c", 
+                          "Musashi/m68kdasm.c", 
+                          "Musashi/m68kops.c", 
+                          "Musashi/softfloat/softfloat.c"
                           ],
-                      include_dirs=["../Musashi", "."],
+                      include_dirs=["Musashi", "."],
                       libraries=libraries,
                       extra_compile_args=compiler_args)
 

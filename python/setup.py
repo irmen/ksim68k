@@ -9,7 +9,7 @@ from setuptools import setup
 if sys.version_info < (3, 5):
     raise SystemExit("ksim68k requires Python 3.5 or newer")
 
-module_path = os.path.abspath("../Musashi")  # to make sure the compiler can find the required include files
+module_path = os.path.abspath(".")  # to make sure the compiler can find the required include files
 PKG_VERSION = re.search(r'^__version__\s*=\s*"(.+)"', open("ksim68k.py", "rt").read(), re.MULTILINE).groups()[0]
 
 print("VERSION",PKG_VERSION)
