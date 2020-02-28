@@ -1,9 +1,7 @@
 import os
 import sys
-import enum
 import re
-import textwrap
-import unittest
+import subprocess
 from setuptools import setup
 
 if sys.version_info < (3, 5):
@@ -12,9 +10,9 @@ if sys.version_info < (3, 5):
 module_path = os.path.abspath(".")  # to make sure the compiler can find the required include files
 PKG_VERSION = re.search(r'^__version__\s*=\s*"(.+)"', open("ksim68k.py", "rt").read(), re.MULTILINE).groups()[0]
 
-print("VERSION",PKG_VERSION)
 
 if __name__ == "__main__":
+    subprocess.check_call(["make", "-C", "Musashi", "m68kops.c"])
     setup(
         name="ksim68k",
         version=PKG_VERSION,
@@ -23,7 +21,7 @@ if __name__ == "__main__":
         zip_safe=False,
         include_package_data=False,
         py_modules=["ksim68k"],
-        install_requires=["cffi>=1.3.0"],
-        setup_requires=["cffi>=1.3.0"],
+        install_requires=["cffi>=1.11.0"],
+        setup_requires=["cffi>=1.11.0"],
         python_requires=">=3.5"
     )

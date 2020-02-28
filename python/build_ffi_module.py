@@ -7,11 +7,10 @@ Author: Irmen de Jong (irmen@razorvine.net)
 Software license: "MIT software license". See http://opensource.org/licenses/MIT
 """
 
-
 import os
-import platform
 from cffi import FFI
 
+# the stripped header file, generated with: cpp -nostdinc -E -P Musashi/m68k.h
 m68k_h = """
 enum
 {
@@ -111,39 +110,72 @@ unsigned int m68k_disassemble_raw(char* str_buff, unsigned int pc, const unsigne
 
 extern_python = """
 
-extern "Python+C" unsigned int  m68k_read_memory_8(unsigned int address);
-extern "Python+C" unsigned int  m68k_read_memory_16(unsigned int address);
-extern "Python+C" unsigned int  m68k_read_memory_32(unsigned int address);
-extern "Python+C" unsigned int m68k_read_disassembler_8  (unsigned int address);
-extern "Python+C" unsigned int m68k_read_disassembler_16 (unsigned int address);
-extern "Python+C" unsigned int m68k_read_disassembler_32 (unsigned int address);
-extern "Python+C" void m68k_write_memory_8(unsigned int address, unsigned int value);
-extern "Python+C" void m68k_write_memory_16(unsigned int address, unsigned int value);
-extern "Python+C" void m68k_write_memory_32(unsigned int address, unsigned int value);
+extern "Python" unsigned int _ksim68k_read_memory_8(unsigned int address);
+extern "Python" unsigned int _ksim68k_read_memory_16(unsigned int address);
+extern "Python" unsigned int _ksim68k_read_memory_32(unsigned int address);
+extern "Python" unsigned int _ksim68k_read_disassembler_8  (unsigned int address);
+extern "Python" unsigned int _ksim68k_read_disassembler_16 (unsigned int address);
+extern "Python" unsigned int _ksim68k_read_disassembler_32 (unsigned int address);
+extern "Python" void _ksim68k_write_memory_8(unsigned int address, unsigned int value);
+extern "Python" void _ksim68k_write_memory_16(unsigned int address, unsigned int value);
+extern "Python" void _ksim68k_write_memory_32(unsigned int address, unsigned int value);
 """
 
 ffibuilder = FFI()
 ffibuilder.cdef(m68k_h + extern_python)
 
-
 libraries = []
-compiler_args = ["-g1", "-O2", "-march=native", "-mtune=native", '-DMUSASHI_CNF="m68kconf_custom.h"']
+compiler_args = ["-g1"]
 if os.name == "posix":
     libraries = ["m"]
-
 
 ffibuilder.set_source("_musashi", """
                       #include "m68k.h"
 
-/* Read data immediately following the PC */
+static unsigned int _ksim68k_read_memory_8(unsigned int address);
+static unsigned int _ksim68k_read_memory_16(unsigned int address);
+static unsigned int _ksim68k_read_memory_32(unsigned int address);
+static unsigned int _ksim68k_read_disassembler_8  (unsigned int address);
+static unsigned int _ksim68k_read_disassembler_16 (unsigned int address);
+static unsigned int _ksim68k_read_disassembler_32 (unsigned int address);
+static void _ksim68k_write_memory_8(unsigned int address, unsigned int value);
+static void _ksim68k_write_memory_16(unsigned int address, unsigned int value);
+static void _ksim68k_write_memory_32(unsigned int address, unsigned int value);
+
+unsigned int  m68k_read_memory_8(unsigned int address) {
+    return _ksim68k_read_memory_8(address);
+}
+unsigned int  m68k_read_memory_16(unsigned int address){
+    return _ksim68k_read_memory_16(address);
+}
+unsigned int  m68k_read_memory_32(unsigned int address){
+    return _ksim68k_read_memory_32(address);
+}
+unsigned int m68k_read_disassembler_8  (unsigned int address){
+    return _ksim68k_read_disassembler_8(address);
+}
+unsigned int m68k_read_disassembler_16 (unsigned int address){
+    return _ksim68k_read_disassembler_16(address);
+}
+unsigned int m68k_read_disassembler_32 (unsigned int address){
+    return _ksim68k_read_disassembler_32(address);
+}
+void m68k_write_memory_8(unsigned int address, unsigned int value) {
+    _ksim68k_write_memory_8(address, value);
+}
+void m68k_write_memory_16(unsigned int address, unsigned int value) {
+    _ksim68k_write_memory_16(address, value);
+}
+void m68k_write_memory_32(unsigned int address, unsigned int value) {
+    _ksim68k_write_memory_32(address, value);
+}
+
 unsigned int  m68k_read_immediate_16(unsigned int address) {
     return m68k_read_memory_16(address);
 }
 unsigned int  m68k_read_immediate_32(unsigned int address) {
     return m68k_read_memory_32(address);
 }
-
-/* Read data relative to the PC */
 unsigned int  m68k_read_pcrelative_8(unsigned int address) {
     return m68k_read_memory_8(address);
 }
@@ -155,24 +187,23 @@ unsigned int  m68k_read_pcrelative_32(unsigned int address){
 }
 
 void m68k_state_register(const char *type, int index)
-{
-    /* dummy */
-}
+{ /* dummy */ }
 
 void m68k_write_memory_32_pd(unsigned int address, unsigned int value) {
-    /* dummy */
+    m68k_write_memory_32(address, value);
 }
 
 
 """,
                       sources=[
-                          "Musashi/m68kcpu.c", 
-                          "Musashi/m68kdasm.c", 
-                          "Musashi/m68kops.c", 
+                          "Musashi/m68kcpu.c",
+                          "Musashi/m68kdasm.c",
+                          "Musashi/m68kops.c",
                           "Musashi/softfloat/softfloat.c"
-                          ],
+                      ],
                       include_dirs=["Musashi", "."],
                       libraries=libraries,
+                      define_macros=[("MUSASHI_CNF", '"m68kconf_custom.h"')],
                       extra_compile_args=compiler_args)
 
 if __name__ == "__main__":

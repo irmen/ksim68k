@@ -1,1 +1,1 @@
-Python m68k cpu simulation
+Python m68k cpu simulator
