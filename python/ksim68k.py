@@ -1,5 +1,6 @@
 import enum
-from typing import Optional, Tuple
+from abc import ABC
+from typing import Optional, Tuple, Sequence
 
 from _musashi import ffi, lib
 
@@ -23,14 +24,6 @@ class Cpu(enum.Enum):
 
 class Register(enum.Enum):
     """A cpu register"""
-    A0 = lib.M68K_REG_A0
-    A1 = lib.M68K_REG_A1
-    A2 = lib.M68K_REG_A2
-    A3 = lib.M68K_REG_A3
-    A4 = lib.M68K_REG_A4
-    A5 = lib.M68K_REG_A5
-    A6 = lib.M68K_REG_A6
-    A7 = lib.M68K_REG_A7
     D0 = lib.M68K_REG_D0
     D1 = lib.M68K_REG_D1
     D2 = lib.M68K_REG_D2
@@ -39,73 +32,118 @@ class Register(enum.Enum):
     D5 = lib.M68K_REG_D5
     D6 = lib.M68K_REG_D6
     D7 = lib.M68K_REG_D7
-    CAAR = lib.M68K_REG_CAAR
-    CACR = lib.M68K_REG_CACR
-    DFC = lib.M68K_REG_DFC
-    IR = lib.M68K_REG_IR
-    ISP = lib.M68K_REG_ISP
-    MSP = lib.M68K_REG_MSP
-    PC = lib.M68K_REG_PC
-    PPC = lib.M68K_REG_PPC
-    SFC = lib.M68K_REG_SFC
-    SP = lib.M68K_REG_SP
-    SR = lib.M68K_REG_SR
-    USP = lib.M68K_REG_USP
-    VBR = lib.M68K_REG_VBR
-    PREF_ADDR = lib.M68K_REG_PREF_ADDR
-    PREF_DATA = lib.M68K_REG_PREF_DATA
-    CPU_TYPE = lib.M68K_REG_CPU_TYPE
+    A0 = lib.M68K_REG_A0
+    A1 = lib.M68K_REG_A1
+    A2 = lib.M68K_REG_A2
+    A3 = lib.M68K_REG_A3
+    A4 = lib.M68K_REG_A4
+    A5 = lib.M68K_REG_A5
+    A6 = lib.M68K_REG_A6
+    A7 = lib.M68K_REG_A7
+    PC = lib.M68K_REG_PC                # program counter
+    SR = lib.M68K_REG_SR                # status register (CCR)
+    SP = lib.M68K_REG_SP                # current stack pointer (A7)
+    ISP = lib.M68K_REG_ISP              # interrupt stack pointer
+    MSP = lib.M68K_REG_MSP              # master stack pointer
+    USP = lib.M68K_REG_USP              # user stack pointer
+    CAAR = lib.M68K_REG_CAAR            # cache address
+    CACR = lib.M68K_REG_CACR            # cache control
+    PPC = lib.M68K_REG_PPC              # previous program counter
+    DFC = lib.M68K_REG_DFC              # destination function code
+    SFC = lib.M68K_REG_SFC              # source function code
+    VBR = lib.M68K_REG_VBR              # vector base register
+    IR = lib.M68K_REG_IR                # pseudo register: instruction register
+    CPU_TYPE = lib.M68K_REG_CPU_TYPE    # pseudo register: current CPU type
+
+
+class Memory(ABC):
+    def read8(self, address: int) -> int:
+        raise NotImplementedError("memory read 8")
+
+    def read16(self, address: int) -> int:
+        raise NotImplementedError("memory read 16")
+
+    def read32(self, address: int) -> int:
+        raise NotImplementedError("memory read 32")
+
+    def write8(self, address: int, value: int):
+        raise NotImplementedError("memory write 8")
+
+    def write16(self, address: int, value: int):
+        raise NotImplementedError("memory write 16")
+
+    def write32(self, address: int, value: int):
+        raise NotImplementedError("memory write 32")
+
+    def data_read_8(self, data: Sequence[int], address: int) -> int:
+        return data[address]
+
+    def data_read_16(self, data: Sequence[int], address: int) -> int:
+        return (data[address] << 8) | data[address + 1]
+
+    def data_read_32(self, data: Sequence[int], address: int) -> int:
+        return (data[address] << 24) | (data[address + 1] << 16) | (data[address + 2] << 8) | data[address + 3]
+
+    def data_write_8(self, data: Sequence[int], address: int, value: int) -> None:
+        data[address] = value
+
+    def data_write_16(self, data: Sequence[int], address: int, value: int) -> None:
+        data[address] = value >> 8
+        data[address + 1] = value & 255
+
+    def data_write_32(self, data: Sequence[int], address: int, value: int) -> None:
+        data[address] = (value >> 24) & 255
+        data[address + 1] = (value >> 16) & 255
+        data[address + 2] = (value >> 8) & 255
+        data[address + 3] = value & 255
+
+
+memory = Memory()
 
 
 @ffi.def_extern()
 def _ksim68k_read_memory_8(address: int) -> int:
-    print("read memory 8", hex(address))
-    return 0
+    return memory.read8(address)
 
 
 @ffi.def_extern()
 def _ksim68k_read_memory_16(address: int) -> int:
-    print("read memory 16", hex(address))
-    return 0
+    return memory.read16(address)
 
 
 @ffi.def_extern()
 def _ksim68k_read_memory_32(address: int) -> int:
-    print("read memory 32", hex(address))
-    return 0
+    return memory.read32(address)
 
 
 @ffi.def_extern()
 def _ksim68k_read_disassembler_8(address: int) -> int:
-    print("disassembler read memory 8", hex(address))
-    return 0
+    return memory.read8(address)
 
 
 @ffi.def_extern()
 def _ksim68k_read_disassembler_16(address: int) -> int:
-    print("disassembler read memory 16", hex(address))
-    return 0
+    return memory.read16(address)
 
 
 @ffi.def_extern()
 def _ksim68k_read_disassembler_32(address: int) -> int:
-    print("disassembler read memory 32", hex(address))
-    return 0
+    return memory.read32(address)
 
 
 @ffi.def_extern()
 def _ksim68k_write_memory_8(address: int, value: int) -> None:
-    print("write memory 8", hex(address), hex(value))
+    memory.write8(address, value)
 
 
 @ffi.def_extern()
 def _ksim68k_write_memory_16(address: int, value: int) -> None:
-    print("write memory 16", hex(address), hex(value))
+    memory.write16(address, value)
 
 
 @ffi.def_extern()
 def _ksim68k_write_memory_32(address: int, value: int) -> None:
-    print("write memory 32", hex(address), hex(value))
+    memory.write32(address, value)
 
 
 context_size = lib.m68k_context_size()
@@ -133,6 +171,12 @@ def init(cpu: Cpu) -> None:
     """Sets the CPU type that is being simulated and initializes the CPU."""
     lib.m68k_set_cpu_type(cpu.value)
     lib.m68k_init()
+
+
+def use_memory(mem: Memory) -> None:
+    """Start using the provided memory to read/write values"""
+    global memory
+    memory = mem
 
 
 def execute(num_cycles: int) -> int:
@@ -177,7 +221,7 @@ def is_valid_instruction(instr: int, cpu: Cpu) -> bool:
 def get_reg(ctx: Optional[bytes], register: Register) -> int:
     """Peek at the internals of a CPU context.  This can either be a context
     retrieved using get_context() or None for the currently running context."""
-    return lib.m68k_get_reg(ctx, register.value)
+    return lib.m68k_get_reg(ctx or ffi.NULL, register.value)
 
 
 def set_reg(register: Register, value: int) -> None:
