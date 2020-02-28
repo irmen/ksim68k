@@ -1,11 +1,9 @@
-# Project specific
-Pipfile
-NOTES.md
 # FFI Builds
 *.so
 
 # Virtual enviroment
 /.venv/
+/.tox/
 
 # Vscode
 /.vscode/
