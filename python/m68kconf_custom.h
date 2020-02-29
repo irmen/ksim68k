@@ -28,8 +28,8 @@
 #define M68K_EMULATE_BKPT_ACK       OPT_OFF
 #define M68K_BKPT_ACK_CALLBACK()    cpu_bkpt_ack_handler_function()
 #define M68K_EMULATE_TRACE          OPT_OFF
-#define M68K_EMULATE_RESET          OPT_OFF
-#define M68K_RESET_CALLBACK()       cpu_reset_handler_function()
+#define M68K_EMULATE_RESET          OPT_SPECIFY_HANDLER
+#define M68K_RESET_CALLBACK()       cpu_reset_handler()
 #define M68K_CMPILD_HAS_CALLBACK     OPT_OFF
 #define M68K_CMPILD_CALLBACK(v,r)    cpu_cmpild_handler_function(v,r)
 #define M68K_RTE_HAS_CALLBACK       OPT_OFF

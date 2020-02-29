@@ -1,7 +1,4 @@
-from typing import List
-
 import pytest
-
 import ksim68k
 
 
@@ -11,42 +8,38 @@ def setup_function(function):
 
 @pytest.fixture
 def memory():
-    return MemoryForTest()
+    return MemoryForTest(0x10000)
 
 
 class MemoryForTest(ksim68k.Memory):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, size: int):
+        super().__init__(size)
         self.reads = []
         self.writes = []
-        self.data = [0] * 0x10000
-
-    def load(self, data: List[int]):
-        self.data = data
 
     def read8(self, address: int) -> int:
         self.reads.append((address, 8))
-        return super().data_read_8(self.data, address)
+        return super().read8(address)
 
     def read16(self, address: int) -> int:
         self.reads.append((address, 16))
-        return super().data_read_16(self.data, address)
+        return super().read16(address)
 
     def read32(self, address: int) -> int:
         self.reads.append((address, 32))
-        return super().data_read_32(self.data, address)
+        return super().read32(address)
 
     def write8(self, address: int, value: int):
         self.writes.append((address, value, 8))
-        super().data_write_8(self.data, address, value)
+        super().write8(address, value)
 
     def write16(self, address: int, value: int):
         self.writes.append((address, value, 16))
-        super().data_write_16(self.data, address, value)
+        super().write16(address, value)
 
     def write32(self, address: int, value: int):
         self.writes.append((address, value, 32))
-        super().data_write_32(self.data, address, value)
+        super().write32(address, value)
 
 
 def test_basics():
@@ -63,9 +56,9 @@ def test_disassem(memory: MemoryForTest):
     assert disassem == "move.b  ($78,A4,D5.w*8), D1"
 
 
-def test_reset(memory: MemoryForTest):
-    memory.data_write_32(memory.data, 0, 0x11223344)   # stack pointer
-    memory.data_write_32(memory.data, 4, 0xaabbccdd)   # program counter
+def test_reset_pulse(memory: MemoryForTest):
+    memory.data[0:4] = [0x11, 0x22, 0x33, 0x44]     # stack pointer
+    memory.data[4:8] = [0xaa, 0xbb, 0xcc, 0xdd]     # program counter
     ksim68k.use_memory(memory)
     ksim68k.pulse_reset()
     sp = ksim68k.get_reg(None, ksim68k.Register.SP)
@@ -78,9 +71,24 @@ def test_reset(memory: MemoryForTest):
     assert pc == 0xaabbccdd
 
 
+def test_reset_callback(memory: MemoryForTest):
+    handler_called = False
+    def handler():
+        nonlocal handler_called
+        handler_called = True
+    memory.write32(0, 0x5000)   # stack pointer
+    memory.write32(4, 0x2000)   # program counter
+    memory.write16(0x2000, 0x4e70)       # reset instruction
+    ksim68k.use_memory(memory)
+    ksim68k.use_reset_handler(handler)
+    ksim68k.pulse_reset()
+    ksim68k.execute(5)
+    assert handler_called
+
+
 def test_execute(memory: MemoryForTest):
-    memory.data_write_32(memory.data, 0, 0x00001234)   # stack pointer
-    memory.data_write_32(memory.data, 4, 0x0000abcd)   # program counter
+    memory.write32(0, 0x00001234)   # stack pointer
+    memory.write32(4, 0x0000abcd)   # program counter
     ksim68k.use_memory(memory)
     ksim68k.pulse_reset()
     cycles = ksim68k.execute(20)

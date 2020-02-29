@@ -1,6 +1,5 @@
 import enum
-from abc import ABC
-from typing import Optional, Tuple, Sequence
+from typing import Optional, Tuple, MutableSequence, Callable
 
 from _musashi import ffi, lib
 
@@ -56,49 +55,40 @@ class Register(enum.Enum):
     CPU_TYPE = lib.M68K_REG_CPU_TYPE    # pseudo register: current CPU type
 
 
-class Memory(ABC):
+class Memory:
+    def __init__(self, size: int) -> None:
+        self.data = bytearray(size)
+
+    def load(self, address, data: bytes) -> None:
+        if address + len(data) > len(self.data):
+            raise ValueError("size of data is too large to fit in the memory at that address")
+        self.data[address:address+len(data)] = data
+
     def read8(self, address: int) -> int:
-        raise NotImplementedError("memory read 8")
+        return self.data[address]
 
     def read16(self, address: int) -> int:
-        raise NotImplementedError("memory read 16")
+        return (self.data[address] << 8) | self.data[address + 1]
 
     def read32(self, address: int) -> int:
-        raise NotImplementedError("memory read 32")
+        return (self.data[address] << 24) | (self.data[address + 1] << 16) \
+               | (self.data[address + 2] << 8) | self.data[address + 3]
 
-    def write8(self, address: int, value: int):
-        raise NotImplementedError("memory write 8")
+    def write8(self, address: int, value: int) -> None:
+        self.data[address] = value
 
-    def write16(self, address: int, value: int):
-        raise NotImplementedError("memory write 16")
+    def write16(self, address: int, value: int) -> None:
+        self.data[address] = value >> 8
+        self.data[address + 1] = value & 255
 
-    def write32(self, address: int, value: int):
-        raise NotImplementedError("memory write 32")
-
-    def data_read_8(self, data: Sequence[int], address: int) -> int:
-        return data[address]
-
-    def data_read_16(self, data: Sequence[int], address: int) -> int:
-        return (data[address] << 8) | data[address + 1]
-
-    def data_read_32(self, data: Sequence[int], address: int) -> int:
-        return (data[address] << 24) | (data[address + 1] << 16) | (data[address + 2] << 8) | data[address + 3]
-
-    def data_write_8(self, data: Sequence[int], address: int, value: int) -> None:
-        data[address] = value
-
-    def data_write_16(self, data: Sequence[int], address: int, value: int) -> None:
-        data[address] = value >> 8
-        data[address + 1] = value & 255
-
-    def data_write_32(self, data: Sequence[int], address: int, value: int) -> None:
-        data[address] = (value >> 24) & 255
-        data[address + 1] = (value >> 16) & 255
-        data[address + 2] = (value >> 8) & 255
-        data[address + 3] = value & 255
+    def write32(self, address: int, value: int) -> None:
+        self.data[address] = (value >> 24) & 255
+        self.data[address + 1] = (value >> 16) & 255
+        self.data[address + 2] = (value >> 8) & 255
+        self.data[address + 3] = value & 255
 
 
-memory = Memory()
+memory = Memory(1024)
 
 
 @ffi.def_extern()
@@ -146,6 +136,15 @@ def _ksim68k_write_memory_32(address: int, value: int) -> None:
     memory.write32(address, value)
 
 
+def reset_handler():
+    pass
+
+
+@ffi.def_extern()
+def _ksim68k_reset_handler() -> None:
+    reset_handler()
+
+
 context_size = lib.m68k_context_size()
 
 
@@ -179,6 +178,11 @@ def use_memory(mem: Memory) -> None:
     memory = mem
 
 
+def use_reset_handler(handler: Callable[[], None]) -> None:
+    global reset_handler
+    reset_handler = handler
+
+
 def execute(num_cycles: int) -> int:
     """execute num_cycles worth of instructions.  returns number of cycles used"""
     return lib.m68k_execute(num_cycles)
@@ -194,7 +198,7 @@ def cycles_run() -> int:
     return lib.m68k_cycles_run()
 
 
-def disassemble(pc: int, cpu: Cpu) -> Tuple[str, int]:
+def disassemble(pc: int, cpu: Cpu = Cpu.M68000) -> Tuple[str, int]:
     """Disassemble 1 instruction using the specified CPU type, at address pc.
     Returns disassembly, instruction size in bytes."""
     buf = bytes(100)
@@ -203,7 +207,7 @@ def disassemble(pc: int, cpu: Cpu) -> Tuple[str, int]:
     return buf.decode(), length
 
 
-def disassemble_raw(pc: int, opdata: bytes, argdata: bytes, cpu: Cpu) -> Tuple[str, int]:
+def disassemble_raw(pc: int, opdata: bytes, argdata: bytes, cpu: Cpu = Cpu.M68000) -> Tuple[str, int]:
     """Disassemble 1 instruction using the specified CPU type, at address pc.
     Accepts the raw opcode directly instead of reading data via the callback functions.
     Returns disassembly, instruction size in bytes."""
@@ -213,7 +217,7 @@ def disassemble_raw(pc: int, opdata: bytes, argdata: bytes, cpu: Cpu) -> Tuple[s
     return buf.decode(), length
 
 
-def is_valid_instruction(instr: int, cpu: Cpu) -> bool:
+def is_valid_instruction(instr: int, cpu: Cpu = Cpu.M68000) -> bool:
     """Check if an instruction is valid for the specified CPU type"""
     return bool(lib.m68k_is_valid_instruction(instr, cpu.value))
 

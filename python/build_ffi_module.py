@@ -119,6 +119,8 @@ extern "Python" unsigned int _ksim68k_read_disassembler_32 (unsigned int address
 extern "Python" void _ksim68k_write_memory_8(unsigned int address, unsigned int value);
 extern "Python" void _ksim68k_write_memory_16(unsigned int address, unsigned int value);
 extern "Python" void _ksim68k_write_memory_32(unsigned int address, unsigned int value);
+extern "Python" void _ksim68k_reset_handler();
+
 """
 
 ffibuilder = FFI()
@@ -141,6 +143,8 @@ static unsigned int _ksim68k_read_disassembler_32 (unsigned int address);
 static void _ksim68k_write_memory_8(unsigned int address, unsigned int value);
 static void _ksim68k_write_memory_16(unsigned int address, unsigned int value);
 static void _ksim68k_write_memory_32(unsigned int address, unsigned int value);
+static void _ksim68k_reset_handler();
+
 
 unsigned int  m68k_read_memory_8(unsigned int address) {
     return _ksim68k_read_memory_8(address);
@@ -193,6 +197,9 @@ void m68k_write_memory_32_pd(unsigned int address, unsigned int value) {
     m68k_write_memory_32(address, value);
 }
 
+void cpu_reset_handler() {
+    _ksim68k_reset_handler();
+}
 
 """,
                       sources=[
