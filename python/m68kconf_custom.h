@@ -40,8 +40,8 @@
 #define M68K_ILLG_CALLBACK(opcode)  cpu_illegalinstr_handler(opcode)
 #define M68K_EMULATE_FC             OPT_OFF
 #define M68K_SET_FC_CALLBACK(A)     cpu_set_fc_handler_function(A)
-#define M68K_MONITOR_PC             OPT_OFF
-#define M68K_SET_PC_CALLBACK(A)     cpu_pc_changed_handler_function(A)
+#define M68K_MONITOR_PC             OPT_SPECIFY_HANDLER
+#define M68K_SET_PC_CALLBACK(A)     cpu_pc_changed_handler(A)
 #define M68K_INSTRUCTION_HOOK       OPT_OFF
 #define M68K_INSTRUCTION_CALLBACK(pc) cpu_instruction_hook_function(pc)
 #define M68K_EMULATE_PREFETCH       OPT_OFF

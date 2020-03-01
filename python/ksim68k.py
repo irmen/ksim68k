@@ -147,6 +147,11 @@ def illegalinstr_handler(opcode: int) -> None:
     print("ksim68k: illegal instruction encountered: "+hex(opcode), file=sys.stderr)
 
 
+def pc_changed_handler(address: int) -> None:
+    """The default callback for a large change in PC (jump/vector). You can set this to your own function as desired."""
+    pass
+
+
 @ffi.def_extern()
 def _ksim68k_reset_handler() -> None:
     reset_handler()
@@ -155,6 +160,11 @@ def _ksim68k_reset_handler() -> None:
 @ffi.def_extern()
 def _ksim68k_illegalinstr_handler(opcode: int) -> None:
     illegalinstr_handler(opcode)
+
+
+@ffi.def_extern()
+def _ksim68k_pc_changed_handler(address: int) -> None:
+    pc_changed_handler(address)
 
 
 context_size = lib.m68k_context_size()
