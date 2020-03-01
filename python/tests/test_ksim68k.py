@@ -1,3 +1,4 @@
+import os
 import pytest
 import ksim68k
 
@@ -9,6 +10,13 @@ def setup_function(function):
 @pytest.fixture
 def memory():
     return MemoryForTest(0x10000)
+
+
+def read_test_data(filename):
+    if os.path.exists(filename):
+        return open(filename, "rb").read()
+    else:
+        return open("tests/"+filename, "rb").read()
 
 
 class MemoryForTest(ksim68k.Memory):
@@ -105,3 +113,63 @@ def test_execute(memory: MemoryForTest):
     assert reg_pc == 0x0000abed
     assert reg_a7 == reg_sp
     assert reg_sr == 0b0010011100000100
+
+
+def test_illegalinstr_handler(memory: MemoryForTest):
+    old_handler = ksim68k.illegalinstr_handler
+    illegal_found = False
+    def handler(opcode):
+        nonlocal illegal_found
+        illegal_found = opcode == 0x4afc
+    ksim68k.illegalinstr_handler = handler
+    try:
+        memory.write32(0, 0x00002000)    # stack pointer
+        memory.write32(4, 0x00001000)    # program counter
+        memory.write32(16, 0x0022334455)    # illegal instruction vector
+        memory.write16(0x1000, 0x4afc)   # ILLEGAL instruction
+        ksim68k.use_memory(memory)
+        ksim68k.pulse_reset()
+        ksim68k.execute(6)
+        ir = ksim68k.get_reg(ksim68k.Register.IR)
+        pc = ksim68k.get_reg(ksim68k.Register.PC)
+        assert illegal_found
+        assert ir == 0x4afc
+        assert pc == 0x0022334455
+    finally:
+        ksim68k.illegalinstr_handler = old_handler
+
+
+def test_stopinstruction_behavior(memory: MemoryForTest):
+    memory.write32(0, 0x00002000)    # stack pointer
+    memory.write32(4, 0x00001000)    # program counter
+    memory.write16(0x1000, 0x4e72)   # STOP instruction
+    memory.write16(0x1002, 0x2700)   # sr argument
+    ksim68k.use_memory(memory)
+    ksim68k.pulse_reset()
+    ksim68k.execute(20)
+    ir = ksim68k.get_reg(ksim68k.Register.IR)
+    pc = ksim68k.get_reg(ksim68k.Register.PC)
+    assert ir == 0x4e72
+    assert pc == 0x1004
+    ksim68k.execute(40)
+    ir = ksim68k.get_reg(ksim68k.Register.IR)
+    pc = ksim68k.get_reg(ksim68k.Register.PC)
+    assert ir == 0x4e72
+    assert pc == 0x1004
+
+
+def test_execute_example_program():
+    output = ""
+
+    class MappedIoMemory(ksim68k.Memory):
+        def write8(self, address: int, value: int) -> None:
+            if address == 0x00fff002:       # memory mapped chrout register
+                nonlocal output
+                output += chr(value)
+
+    memory = MappedIoMemory(0x8000)
+    memory.load(0, read_test_data("testprog.bin"))
+    ksim68k.use_memory(memory)
+    ksim68k.pulse_reset()
+    ksim68k.execute(2000)
+    assert output == "Hello, world! From the 68000 assembly program.\n"

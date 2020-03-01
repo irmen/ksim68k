@@ -1,4 +1,3 @@
-import sys
 import ksim68k
 
 CHROUT = 0x00fff002
