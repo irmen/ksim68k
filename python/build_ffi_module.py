@@ -108,6 +108,8 @@ unsigned int m68k_disassemble(char* str_buff, unsigned int pc, unsigned int cpu_
 unsigned int m68k_disassemble_raw(char* str_buff, unsigned int pc, const unsigned char* opdata, const unsigned char* argdata, unsigned int cpu_type);
 """
 
+# note: 'extern Python+C' doesn't seem to work properly. So we use static trampoline functions instead.
+
 extern_python = """
 
 extern "Python" unsigned int _ksim68k_read_memory_8(unsigned int address);

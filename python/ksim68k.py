@@ -137,6 +137,7 @@ def _ksim68k_write_memory_32(address: int, value: int) -> None:
 
 
 def reset_handler():
+    """The default callback for a RESET instruction. You can set this to your own function as desired."""
     pass
 
 
@@ -275,6 +276,7 @@ def get_virq(level: int) -> int:
     """Get the current virtual irq lines"""
     return lib.m68k_get_virq(level)
 
+
 # unused callbacks:
 # set_bkpt_ack_callback = lib.m68k_set_bkpt_ack_callback
 # set_fc_callback = lib.m68k_set_fc_callback
@@ -282,6 +284,5 @@ def get_virq(level: int) -> int:
 # set_instr_hook_callback = lib.m68k_set_instr_hook_callback
 # set_int_ack_callback = lib.m68k_set_int_ack_callback
 # set_pc_changed_callback = lib.m68k_set_pc_changed_callback
-# set_reset_instr_callback = lib.m68k_set_reset_instr_callback
 # set_tas_instr_callback = lib.m68k_set_tas_instr_callback
 # state_register = lib.m68k_state_register
