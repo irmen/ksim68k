@@ -1,5 +1,6 @@
+import sys
 import enum
-from typing import Optional, Tuple, MutableSequence, Callable
+from typing import Optional, Tuple, Callable
 
 from _musashi import ffi, lib
 
@@ -136,14 +137,24 @@ def _ksim68k_write_memory_32(address: int, value: int) -> None:
     memory.write32(address, value)
 
 
-def reset_handler():
+def reset_handler() -> None:
     """The default callback for a RESET instruction. You can set this to your own function as desired."""
     pass
+
+
+def illegalinstr_handler(opcode: int) -> None:
+    """The default callback for an illegal instruction. You can set this to your own function as desired."""
+    print("ksim68k: illegal instruction encountered: "+hex(opcode), file=sys.stderr)
 
 
 @ffi.def_extern()
 def _ksim68k_reset_handler() -> None:
     reset_handler()
+
+
+@ffi.def_extern()
+def _ksim68k_illegalinstr_handler(opcode: int) -> None:
+    illegalinstr_handler(opcode)
 
 
 context_size = lib.m68k_context_size()
@@ -223,7 +234,7 @@ def is_valid_instruction(instr: int, cpu: Cpu = Cpu.M68000) -> bool:
     return bool(lib.m68k_is_valid_instruction(instr, cpu.value))
 
 
-def get_reg(ctx: Optional[bytes], register: Register) -> int:
+def get_reg(register: Register, ctx: Optional[bytes] = None) -> int:
     """Peek at the internals of a CPU context.  This can either be a context
     retrieved using get_context() or None for the currently running context."""
     return lib.m68k_get_reg(ctx or ffi.NULL, register.value)

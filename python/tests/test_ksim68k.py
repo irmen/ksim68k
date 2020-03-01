@@ -61,9 +61,9 @@ def test_reset_pulse(memory: MemoryForTest):
     memory.data[4:8] = [0xaa, 0xbb, 0xcc, 0xdd]     # program counter
     ksim68k.use_memory(memory)
     ksim68k.pulse_reset()
-    sp = ksim68k.get_reg(None, ksim68k.Register.SP)
-    a7 = ksim68k.get_reg(None, ksim68k.Register.A7)
-    pc = ksim68k.get_reg(None, ksim68k.Register.PC)
+    sp = ksim68k.get_reg(ksim68k.Register.SP)
+    a7 = ksim68k.get_reg(ksim68k.Register.A7)
+    pc = ksim68k.get_reg(ksim68k.Register.PC)
     assert memory.reads == [(0, 32), (4, 32)]
     assert memory.writes == []
     assert sp == 0x11223344
@@ -93,12 +93,12 @@ def test_execute(memory: MemoryForTest):
     ksim68k.pulse_reset()
     cycles = ksim68k.execute(20)
     assert cycles == 16
-    reg_a0 = ksim68k.get_reg(None, ksim68k.Register.A0)
-    reg_a7 = ksim68k.get_reg(None, ksim68k.Register.A7)
-    reg_d0 = ksim68k.get_reg(None, ksim68k.Register.D0)
-    reg_pc = ksim68k.get_reg(None, ksim68k.Register.PC)
-    reg_sp = ksim68k.get_reg(None, ksim68k.Register.SP)
-    reg_sr = ksim68k.get_reg(None, ksim68k.Register.SR)
+    reg_a0 = ksim68k.get_reg(ksim68k.Register.A0)
+    reg_a7 = ksim68k.get_reg(ksim68k.Register.A7)
+    reg_d0 = ksim68k.get_reg(ksim68k.Register.D0)
+    reg_pc = ksim68k.get_reg(ksim68k.Register.PC)
+    reg_sp = ksim68k.get_reg(ksim68k.Register.SP)
+    reg_sr = ksim68k.get_reg(ksim68k.Register.SR)
     assert reg_a0 == 0
     assert reg_d0 == 0
     assert reg_sp == 0x00001234

@@ -36,8 +36,8 @@
 #define M68K_RTE_CALLBACK()         cpu_rte_handler_function()
 #define M68K_TAS_HAS_CALLBACK       OPT_OFF
 #define M68K_TAS_CALLBACK()         cpu_tas_handler_function()
-#define M68K_ILLG_HAS_CALLBACK	    OPT_OFF
-#define M68K_ILLG_CALLBACK(opcode)  op_illg(opcode)
+#define M68K_ILLG_HAS_CALLBACK	    OPT_SPECIFY_HANDLER
+#define M68K_ILLG_CALLBACK(opcode)  cpu_illegalinstr_handler(opcode)
 #define M68K_EMULATE_FC             OPT_OFF
 #define M68K_SET_FC_CALLBACK(A)     cpu_set_fc_handler_function(A)
 #define M68K_MONITOR_PC             OPT_OFF
