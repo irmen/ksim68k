@@ -14,7 +14,7 @@ EXEPATH = ./
 
 CC        = gcc
 WARNINGS  = -Wall -Wextra -pedantic
-CFLAGS    = $(WARNINGS) -O2 -march=native -mtune=native
+CFLAGS    = $(WARNINGS) -O2 -march=native -mtune=native -fPIC
 LFLAGS    = $(WARNINGS)
 
 DELETEFILES = $(MUSASHIGENCFILES) $(MUSASHIGENHFILES) $(.OFILES) $(TARGET) $(MUSASHIGENERATOR)$(EXE)

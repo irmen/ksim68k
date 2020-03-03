@@ -122,7 +122,7 @@ extern "Python" void _ksim68k_write_memory_8(unsigned int address, unsigned int 
 extern "Python" void _ksim68k_write_memory_16(unsigned int address, unsigned int value);
 extern "Python" void _ksim68k_write_memory_32(unsigned int address, unsigned int value);
 extern "Python" void _ksim68k_reset_handler();
-extern "Python" void _ksim68k_illegalinstr_handler(unsigned int opcode);
+extern "Python" int _ksim68k_illegalinstr_handler(unsigned int opcode);
 extern "Python" void _ksim68k_pc_changed_handler(unsigned int address);
 
 """
@@ -148,7 +148,7 @@ static void _ksim68k_write_memory_8(unsigned int address, unsigned int value);
 static void _ksim68k_write_memory_16(unsigned int address, unsigned int value);
 static void _ksim68k_write_memory_32(unsigned int address, unsigned int value);
 static void _ksim68k_reset_handler();
-static void _ksim68k_illegalinstr_handler(unsigned int opcode);
+static int _ksim68k_illegalinstr_handler(unsigned int opcode);
 static void _ksim68k_pc_changed_handler(unsigned int address);
 
 
@@ -207,8 +207,8 @@ void cpu_reset_handler() {
     _ksim68k_reset_handler();
 }
 
-void cpu_illegalinstr_handler(unsigned int opcode) {
-    _ksim68k_illegalinstr_handler(opcode);
+int cpu_illegalinstr_handler(unsigned int opcode) {
+    return _ksim68k_illegalinstr_handler(opcode);
 }
 
 void cpu_pc_changed_handler(unsigned int address) {

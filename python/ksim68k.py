@@ -142,9 +142,10 @@ def reset_handler() -> None:
     pass
 
 
-def illegalinstr_handler(opcode: int) -> None:
+def illegalinstr_handler(opcode: int) -> int:
     """The default callback for an illegal instruction. You can set this to your own function as desired."""
     print("ksim68k: illegal instruction encountered: "+hex(opcode), file=sys.stderr)
+    return 0
 
 
 def pc_changed_handler(address: int) -> None:
@@ -158,8 +159,8 @@ def _ksim68k_reset_handler() -> None:
 
 
 @ffi.def_extern()
-def _ksim68k_illegalinstr_handler(opcode: int) -> None:
-    illegalinstr_handler(opcode)
+def _ksim68k_illegalinstr_handler(opcode: int) -> int:
+    return illegalinstr_handler(opcode)
 
 
 @ffi.def_extern()

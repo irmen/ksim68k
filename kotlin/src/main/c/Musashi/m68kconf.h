@@ -45,21 +45,6 @@
 
 
 /* ======================================================================== */
-/* ============================== MAME STUFF ============================== */
-/* ======================================================================== */
-
-/* If you're compiling this for MAME, only change M68K_COMPILE_FOR_MAME
- * to OPT_ON and use m68kmame.h to configure the 68k core.
- */
-#ifndef M68K_COMPILE_FOR_MAME
-#define M68K_COMPILE_FOR_MAME      OPT_OFF
-#endif /* M68K_COMPILE_FOR_MAME */
-
-
-#if M68K_COMPILE_FOR_MAME == OPT_OFF
-
-
-/* ======================================================================== */
 /* ============================= CONFIGURATION ============================ */
 /* ======================================================================== */
 
@@ -108,7 +93,7 @@
 /* If ON, CPU will call the output reset callback when it encounters a reset
  * instruction.
  */
-#define M68K_EMULATE_RESET          OPT_OFF
+#define M68K_EMULATE_RESET          OPT_ON
 #define M68K_RESET_CALLBACK()       your_reset_handler_function()
 
 /* If ON, CPU will call the callback when it encounters a cmpi.l #v, dn
@@ -138,7 +123,7 @@
  * You should put OPT_SPECIFY_HANDLER here if you cant to use it, otherwise it will
  * use a dummy default handler and you'll have to call m68k_set_illg_instr_callback explicitely
  */
-#define M68K_ILLG_HAS_CALLBACK	    OPT_OFF
+#define M68K_ILLG_HAS_CALLBACK	    OPT_ON
 #define M68K_ILLG_CALLBACK(opcode)  op_illg(opcode)
 
 /* If ON, CPU will call the set fc callback on every memory access to
@@ -154,7 +139,7 @@
  * large value.  This allows host programs to be nicer when it comes to
  * fetching immediate data and instructions on a banked memory system.
  */
-#define M68K_MONITOR_PC             OPT_OFF
+#define M68K_MONITOR_PC             OPT_ON
 #define M68K_SET_PC_CALLBACK(A)     your_pc_changed_handler_function(A)
 
 
@@ -186,7 +171,7 @@
 
 /* Emulate PMMU : if you enable this, there will be a test to see if the current chip has some enabled pmmu added to every memory access,
  * so enable this only if it's useful */
-#define M68K_EMULATE_PMMU   OPT_ON
+#define M68K_EMULATE_PMMU   OPT_OFF
 
 /* ----------------------------- COMPATIBILITY ---------------------------- */
 
@@ -200,8 +185,6 @@
 */
 #define M68K_USE_64_BIT  OPT_ON
 
-
-#endif /* M68K_COMPILE_FOR_MAME */
 
 /* ======================================================================== */
 /* ============================== END OF FILE ============================= */

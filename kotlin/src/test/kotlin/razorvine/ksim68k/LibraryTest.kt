@@ -3,12 +3,21 @@
  */
 package razorvine.ksim68k
 
+import java.nio.ByteBuffer
 import kotlin.test.Test
-import kotlin.test.assertTrue
 
 class LibraryTest {
     @Test fun testSomeLibraryMethod() {
-        val musashi = Musashi.INSTANCE
-        assertTrue(musashi.testmethod())
+        val musashi = MusashiNative.INSTANCE
+        musashi.m68k_init()
+        println("VALID? ${musashi.m68k_is_valid_instruction(0x0001, MusashiNative.Cpu.M68030.ordinal)}")
+        musashi.m68k_set_cpu_type(MusashiNative.Cpu.M68030.ordinal)
+        val buffer = ByteBuffer.allocateDirect(900);
+        println(musashi.m68k_get_context(buffer))
+        println(musashi.m68k_context_size())
+        println(musashi.m68k_get_reg(null, MusashiNative.Register.A0.ordinal))
+        val disassem = ByteArray(200)
+        println(musashi.m68k_disassemble(disassem, 0, MusashiNative.Cpu.M68030.ordinal))
+        println(disassem)
     }
 }
