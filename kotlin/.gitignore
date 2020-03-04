@@ -3,4 +3,6 @@
 
 # Ignore Gradle build output directory
 build
-*.[s]o
+*.so
+*.o
+

@@ -2,11 +2,12 @@
 .PHONY:	copylib
 
 
-MUSASHISRC=src/main/c/Musashi
+CSRCDIR=src/main/c
+MUSASHISRC=$(CSRCDIR)/Musashi
 
 all:  libmusashi.so  copylib
 
-libmusashi.so:  $(MUSASHISRC)/m68kconf.h $(MUSASHISRC)/m68kcpu.o $(MUSASHISRC)/m68kdasm.o $(MUSASHISRC)/m68kops.o $(MUSASHISRC)/softfloat/softfloat.o
+libmusashi.so:  $(MUSASHISRC)/m68kconf.h $(MUSASHISRC)/m68kcpu.o $(MUSASHISRC)/m68kdasm.o $(MUSASHISRC)/m68kops.o $(MUSASHISRC)/softfloat/softfloat.o $(CSRCDIR)/memreadwrite.o
 	gcc -shared -o libmusashi.so $^
 
 
@@ -26,5 +27,5 @@ $(MUSASHISRC)/m68kops.o:
 $(MUSASHISRC)/softfloat/softfloat.o:
 	make -C src/main/c/Musashi
 
-
-
+$(CSRCDIR)/memreadwrite.o:  $(CSRCDIR)/memreadwrite.c
+	gcc -fPIC -c -o $@ $<

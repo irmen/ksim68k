@@ -6,18 +6,20 @@ package razorvine.ksim68k
 import java.nio.ByteBuffer
 import kotlin.test.Test
 
+
 class LibraryTest {
     @Test fun testSomeLibraryMethod() {
-        val musashi = MusashiNative.INSTANCE
-        musashi.m68k_init()
-        println("VALID? ${musashi.m68k_is_valid_instruction(0x0001, MusashiNative.Cpu.M68030.ordinal)}")
-        musashi.m68k_set_cpu_type(MusashiNative.Cpu.M68030.ordinal)
+        val memory = Memory(ShortArray(20000))
+        Ksim68k.use_memory(memory)
+        Ksim68k.init()
+        println("VALID? ${Ksim68k.is_valid_instruction(0x0001, Cpu.M68030)}")
+        Ksim68k.set_cpu_type(Cpu.M68030)
         val buffer = ByteBuffer.allocateDirect(900);
-        println(musashi.m68k_get_context(buffer))
-        println(musashi.m68k_context_size())
-        println(musashi.m68k_get_reg(null, MusashiNative.Register.A0.ordinal))
+        println(Ksim68k.get_context(buffer))
+        println(Ksim68k.context_size())
+        println(Ksim68k.get_reg(null, Register.A0))
         val disassem = ByteArray(200)
-        println(musashi.m68k_disassemble(disassem, 0, MusashiNative.Cpu.M68030.ordinal))
+        println(Ksim68k.disassemble(disassem, 0, Cpu.M68030))
         println(disassem)
     }
 }

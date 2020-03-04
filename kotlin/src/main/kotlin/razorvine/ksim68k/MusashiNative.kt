@@ -5,7 +5,7 @@ import com.sun.jna.Library
 import java.nio.Buffer
 
 
-interface MusashiNative: Library {
+internal interface MusashiNative: Library {
 
     companion object {
         init {
@@ -21,58 +21,7 @@ interface MusashiNative: Library {
 //        }
     }
 
-    enum class Cpu {
-        INVALID,
-        M68000,
-        M68010,
-        M68EC020,
-        M68020,
-        M68EC030,
-        M68030,
-        M68EC040,
-        M68LC040,
-        M68040,
-        SCC68070
-    }
-
-    enum class Register {
-        D0,
-        D1,
-        D2,
-        D3,
-        D4,
-        D5,
-        D6,
-        D7,
-        A0,
-        A1,
-        A2,
-        A3,
-        A4,
-        A5,
-        A6,
-        A7,
-        PC,
-        SR,
-        SP,
-        USP,
-        ISP,
-        MSP,
-        SFC,
-        DFC,
-        VBR,
-        CACR,
-        CAAR,
-        PREF_ADDR,
-        PREF_DATA,
-        PPC,
-        IR,
-        CPU_TYPE
-    }
-
-
     // functions:
-    // TODO
     fun m68k_init()
     fun m68k_set_cpu_type(cpu_type: Int)
     fun m68k_pulse_reset()
@@ -95,6 +44,13 @@ interface MusashiNative: Library {
     fun m68k_disassemble(str_buff: ByteArray, pc: Int, cpu_type: Int): Int
     fun m68k_disassemble_raw(str_buff: ByteArray, pc: Int, opdata: ByteArray, argdata: ByteArray, cpu_type: Int): Int
 
+    fun set_read_memory_8_callback(callback: Callback)
+    fun set_read_memory_16_callback(callback: Callback)
+    fun set_read_memory_32_callback(callback: Callback)
+    fun set_write_memory_8_callback(callback: Callback)
+    fun set_write_memory_16_callback(callback: Callback)
+    fun set_write_memory_32_callback(callback: Callback)
+
 //    fun m68k_set_int_ack_callback(int (*callback)(int int_level))
 //    fun m68k_set_bkpt_ack_callback(void (*callback)(unsigned int data))
 //    fun m68k_set_reset_instr_callback(void (*callback)(void))
@@ -103,23 +59,6 @@ interface MusashiNative: Library {
 //    fun m68k_set_illg_instr_callback(int (*callback)(int))
 //    fun m68k_set_fc_callback(void (*callback)(unsigned int new_fc))
 //    fun m68k_set_instr_hook_callback(void (*callback)(unsigned int pc))
-
-// TODO function stubs for these that you an register a callback for:
-// unsigned int m68k_read_memory_8(unsigned int address);
-// unsigned int m68k_read_memory_16(unsigned int address);
-// unsigned int m68k_read_memory_32(unsigned int address);
-// unsigned int m68k_read_immediate_16(unsigned int address);
-// unsigned int m68k_read_immediate_32(unsigned int address);
-// unsigned int m68k_read_pcrelative_8(unsigned int address);
-// unsigned int m68k_read_pcrelative_16(unsigned int address);
-// unsigned int m68k_read_pcrelative_32(unsigned int address);
-// unsigned int m68k_read_disassembler_8 (unsigned int address);
-// unsigned int m68k_read_disassembler_16 (unsigned int address);
-// unsigned int m68k_read_disassembler_32 (unsigned int address);
-// void m68k_write_memory_8(unsigned int address, unsigned int value);
-// void m68k_write_memory_16(unsigned int address, unsigned int value);
-// void m68k_write_memory_32(unsigned int address, unsigned int value);
-// void m68k_write_memory_32_pd(unsigned int address, unsigned int value);
 
     // IGNORED for now:  void m68k_state_register(const char *type, int index);
 }
