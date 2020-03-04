@@ -9,7 +9,7 @@ import kotlin.test.Test
 
 class LibraryTest {
     @Test fun testSomeLibraryMethod() {
-        val memory = Memory(ShortArray(20000))
+        val memory = Memory(ByteArray(20000))
         Ksim68k.use_memory(memory)
         Ksim68k.init()
         println("VALID? ${Ksim68k.is_valid_instruction(0x0001, Cpu.M68030)}")
