@@ -1,5 +1,6 @@
 package razorvine.ksim68k
 
+import com.sun.jna.Callback
 import java.nio.Buffer
 
 
@@ -58,11 +59,14 @@ object Ksim68k {
 
     private val musashi = MusashiNative.INSTANCE
 
-    // functions:
     fun init(cpu: Cpu) {
         musashi.m68k_set_cpu_type(cpu.ordinal)
         musashi.m68k_init()
+        musashi.m68k_set_reset_instr_callback(ResetHandler)
+        musashi.m68k_set_illg_instr_callback(IllegalInstrHandler)
+        musashi.m68k_set_pc_changed_callback(PcChangedHandler)
     }
+
     fun setCpuType(cpu: Cpu) = musashi.m68k_set_cpu_type(cpu.ordinal)
     fun pulseReset() = musashi.m68k_pulse_reset()
     fun execute(num_cycles: Int) = musashi.m68k_execute(num_cycles)
@@ -88,6 +92,7 @@ object Ksim68k {
         val instrSize = musashi.m68k_disassemble(buff, pc, cpu.ordinal)
         return Pair(String(buff, 0, buff.indexOf(0)), instrSize)
     }
+
     fun disassembleRaw(pc: Int, opdata: ByteArray, argdata: ByteArray, cpu: Cpu = Cpu.M68000): Pair<String, Int> {
         val buff = ByteArray(100)
         val instrSize = musashi.m68k_disassemble_raw(buff, pc, opdata, argdata, cpu.ordinal)
@@ -98,13 +103,46 @@ object Ksim68k {
         memory.registerCallbacks(musashi)
     }
 
-    // TODO:
+    object ResetHandler : Callback {
+        var callbackFunction: () -> Unit = { }
+        fun callback() = callbackFunction()
+    }
+
+    object IllegalInstrHandler : Callback {
+        var callbackFunction: (Int) -> Int = { opcode ->
+            println("Ksim68k: illegal instruction encountered: ${opcode.toString(16)}")
+            0 }
+        fun callback(opcode: Int): Int = callbackFunction(opcode)
+    }
+
+    object PcChangedHandler : Callback {
+        var callbackFunction: (Int) -> Int = { address -> 0 }
+        fun callback(address: Int): Int = callbackFunction(address)
+    }
+
+    var handlerForResetInstruction: () -> Unit
+        get() = ResetHandler.callbackFunction
+        set(value) {
+            ResetHandler.callbackFunction = value
+        }
+
+    var handlerForIllegalInstruction: (Int) -> Int
+        get() = IllegalInstrHandler.callbackFunction
+        set(value) {
+            IllegalInstrHandler.callbackFunction = value
+        }
+
+    var handlerForPcChanged: (Int) -> Int
+        get() = PcChangedHandler.callbackFunction
+        set(value) {
+            PcChangedHandler.callbackFunction = value
+        }
+
+
+    // not implemented for now:
 //    fun m68k_set_int_ack_callback(int (*callback)(int int_level))
 //    fun m68k_set_bkpt_ack_callback(void (*callback)(unsigned int data))
-//    fun m68k_set_reset_instr_callback(void (*callback)(void))
-//    fun m68k_set_pc_changed_callback(void (*callback)(unsigned int new_pc))
 //    fun m68k_set_tas_instr_callback(int (*callback)(void))
-//    fun m68k_set_illg_instr_callback(int (*callback)(int))
 //    fun m68k_set_fc_callback(void (*callback)(unsigned int new_fc))
 //    fun m68k_set_instr_hook_callback(void (*callback)(unsigned int pc))
 

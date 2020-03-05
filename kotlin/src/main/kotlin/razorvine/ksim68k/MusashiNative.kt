@@ -50,13 +50,14 @@ internal interface MusashiNative: Library {
     fun set_write_memory_8_callback(callback: Callback)
     fun set_write_memory_16_callback(callback: Callback)
     fun set_write_memory_32_callback(callback: Callback)
+    fun m68k_set_reset_instr_callback(callback: Callback)
+    fun m68k_set_pc_changed_callback(callback: Callback)
+    fun m68k_set_illg_instr_callback(callback: Callback)
 
+// not used for now:
 //    fun m68k_set_int_ack_callback(int (*callback)(int int_level))
 //    fun m68k_set_bkpt_ack_callback(void (*callback)(unsigned int data))
-//    fun m68k_set_reset_instr_callback(void (*callback)(void))
-//    fun m68k_set_pc_changed_callback(void (*callback)(unsigned int new_pc))
 //    fun m68k_set_tas_instr_callback(int (*callback)(void))
-//    fun m68k_set_illg_instr_callback(int (*callback)(int))
 //    fun m68k_set_fc_callback(void (*callback)(unsigned int new_fc))
 //    fun m68k_set_instr_hook_callback(void (*callback)(unsigned int pc))
 

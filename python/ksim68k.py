@@ -1,10 +1,10 @@
 import sys
 import enum
-from typing import Optional, Tuple, Callable
+from typing import Optional, Tuple
 
 from _musashi import ffi, lib
 
-__version__ = "1.0.dev0"
+__version__ = "1.0"
 
 
 class Cpu(enum.Enum):

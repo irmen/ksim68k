@@ -127,6 +127,7 @@ def test_illegalinstr_handler():
     def handler(opcode):
         nonlocal illegal_found
         illegal_found = opcode == 0x4afc
+        return 0
     ksim68k.illegalinstr_handler = handler
     try:
         memory.write32(0, 0x00002000)    # stack pointer
@@ -142,6 +143,27 @@ def test_illegalinstr_handler():
         assert pc == 0x0022334455
     finally:
         ksim68k.illegalinstr_handler = old_handler
+
+
+def test_pc_changed_handler():
+    jumps = []
+    def handler(address):
+        jumps.append(address)
+    old_handler = ksim68k.pc_changed_handler
+    ksim68k.pc_changed_handler = handler
+    try:
+        memory.write32(0, 0x00002000)    # stack pointer
+        memory.write32(4, 0x00001000)    # program counter
+        memory.write16(0x1000, 0x4e71)   # NOP instruction
+        memory.write16(0x1002, 0x4e71)   # NOP instruction
+        memory.write16(0x1004, 0x4e71)   # NOP instruction
+        ksim68k.pulse_reset()
+        ksim68k.execute(6)
+        pc = ksim68k.get_reg(ksim68k.Register.PC)
+        assert pc == 0x1002
+        assert jumps == [0, 0x1000]
+    finally:
+        ksim68k.pc_changed_handler = old_handler
 
 
 def test_stopinstruction_behavior():

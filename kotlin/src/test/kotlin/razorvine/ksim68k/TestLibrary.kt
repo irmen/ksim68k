@@ -87,7 +87,6 @@ class TestLibrary {
         memory = MemoryForTest(ByteArray(0x10000))
         Ksim68k.useMemory(memory)
         Ksim68k.init(Cpu.M68030)
-        println("INIT DONE")
     }
 
     @Test
@@ -129,10 +128,15 @@ class TestLibrary {
         memory.write32(0, 0x5000)   // stack pointer
         memory.write32(4, 0x2000)   // program counter
         memory.write16(0x2000, 0x4e70)       // reset instruction
-        // TODO Ksim68k.useResetHandler(handler)
-        Ksim68k.pulseReset()
-        Ksim68k.execute(5)
-        assertTrue(handler_called)
+        val oldHandler = Ksim68k.handlerForResetInstruction
+        Ksim68k.handlerForResetInstruction = ::handler
+        try {
+            Ksim68k.pulseReset()
+            Ksim68k.execute(5)
+            assertTrue(handler_called)
+        } finally {
+            Ksim68k.handlerForResetInstruction = oldHandler
+        }
     }
 
     @Test
@@ -173,10 +177,12 @@ class TestLibrary {
     @Test
     fun testIllegalInstrHandler() {
         var illegalFound = false
-        fun handler(opcode: Int) {
+        fun handler(opcode: Int): Int {
             illegalFound = opcode == 0x4afc
+            return 0
         }
-        // TODO val oldHandler = Ksim68k.useIllegalInstrHandler(handler)
+        val oldHandler = Ksim68k.handlerForIllegalInstruction
+        Ksim68k.handlerForIllegalInstruction = ::handler
         try {
             memory.write32(0, 0x00002000)    // stack pointer
             memory.write32(4, 0x00001000)    // program counter
@@ -190,7 +196,32 @@ class TestLibrary {
             assertEquals(0x4afc, ir)
             assertEquals(0x0022334455, pc)
         } finally {
-            // TODO Ksim68k.useIllegalInstrHandler(oldHandler)
+            Ksim68k.handlerForIllegalInstruction = oldHandler
+        }
+    }
+
+    @Test
+    fun testPcChangedHandler() {
+        val jumps = mutableListOf<Int>()
+        fun handler(address: Int): Int {
+            jumps.add(address)
+            return 0
+        }
+        val oldHandler = Ksim68k.handlerForPcChanged
+        Ksim68k.handlerForPcChanged = ::handler
+        try {
+            memory.write32(0, 0x00002000)    // stack pointer
+            memory.write32(4, 0x00001000)    // program counter
+            memory.write16(0x1000, 0x4e71)   // NOP instruction
+            memory.write16(0x1002, 0x4e71)   // NOP instruction
+            memory.write16(0x1004, 0x4e71)   // NOP instruction
+            Ksim68k.pulseReset()
+            Ksim68k.execute(6)
+            val pc = Ksim68k.getReg(Register.PC)
+            assertEquals(0x1002, pc)
+            assertEquals(listOf(0, 0x1000), jumps)
+        } finally {
+            Ksim68k.handlerForPcChanged = oldHandler
         }
     }
 
