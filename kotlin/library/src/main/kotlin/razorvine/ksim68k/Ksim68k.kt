@@ -116,8 +116,8 @@ object Ksim68k {
     }
 
     object PcChangedHandler : Callback {
-        var callbackFunction: (Int) -> Int = { address -> 0 }
-        fun callback(address: Int): Int = callbackFunction(address)
+        var callbackFunction: (Int) -> Unit = { }
+        fun callback(address: Int): Unit = callbackFunction(address)
     }
 
     var handlerForResetInstruction: () -> Unit
@@ -132,7 +132,7 @@ object Ksim68k {
             IllegalInstrHandler.callbackFunction = value
         }
 
-    var handlerForPcChanged: (Int) -> Int
+    var handlerForPcChanged: (Int) -> Unit
         get() = PcChangedHandler.callbackFunction
         set(value) {
             PcChangedHandler.callbackFunction = value

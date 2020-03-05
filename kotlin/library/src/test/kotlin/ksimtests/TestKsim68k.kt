@@ -13,7 +13,7 @@ class TestKsim68k {
 
     private lateinit var memory: MemoryForTest
 
-    private open class MemoryForTest(mem: ByteArray) : Memory(mem) {
+    private open class MemoryForTest(size: Int) : Memory(size) {
 
         val reads = mutableListOf<Pair<Int, Int>>()
         val writes = mutableListOf<Triple<Int, Long, Int>>()
@@ -77,15 +77,11 @@ class TestKsim68k {
             writes.add(Triple(address, value.toLong() and 0xffffffff, 32))
             super.write32s(address, value)
         }
-
-        fun load(address: Int, data: ByteArray) {
-            data.copyInto(mem, address, 0, data.size)
-        }
     }
 
     @BeforeTest
     fun setup() {
-        memory = MemoryForTest(ByteArray(0x10000))
+        memory = MemoryForTest(0x10000)
         Ksim68k.useMemory(memory)
         Ksim68k.init(Cpu.M68030)
     }
@@ -101,14 +97,10 @@ class TestKsim68k {
 
     @Test
     fun testResetPulse() {
-        memory.mem[0] = 0x11
-        memory.mem[1] = 0x22
-        memory.mem[2] = 0x33
-        memory.mem[3] = 0x44     // stack pointer set
-        memory.mem[4] = 0xaa.toByte()
-        memory.mem[5] = 0xbb.toByte()
-        memory.mem[6] = 0xcc.toByte()
-        memory.mem[7] = 0xdd.toByte()    // program counter set
+        memory.write32(0, 0x11223344)  // stack pointer
+        memory.write32(4, 0xaabbccdd)  // program counter
+        memory.writes.clear()
+        memory.reads.clear()
         Ksim68k.pulseReset()
         val sp = Ksim68k.getReg(Register.SP)
         val a7 = Ksim68k.getReg(Register.A7)
@@ -204,9 +196,8 @@ class TestKsim68k {
     @Test
     fun testPcChangedHandler() {
         val jumps = mutableListOf<Int>()
-        fun handler(address: Int): Int {
+        fun handler(address: Int) {
             jumps.add(address)
-            return 0
         }
         val oldHandler = Ksim68k.handlerForPcChanged
         Ksim68k.handlerForPcChanged = ::handler
@@ -249,7 +240,7 @@ class TestKsim68k {
     fun testExecuteExampleProgram() {
         var output = ""
 
-        class MappedIoMemory(size: Int) : MemoryForTest(ByteArray(size)) {
+        class MappedIoMemory(size: Int) : MemoryForTest(size) {
             override fun write8(address: Int, value: Short) {
                 if (address == 0x00fff002) {
                     // memory mapped chrout register

@@ -2,7 +2,10 @@ package razorvine.ksim68k
 
 import com.sun.jna.Callback
 
-open class Memory(val mem: ByteArray) {
+open class Memory(size: Int) {
+
+    private val mem = ByteArray(size)
+
     internal fun registerCallbacks(musashi: MusashiNative) {
         musashi.set_read_memory_8_callback(Read8(this))
         musashi.set_read_memory_16_callback(Read16(this))
@@ -64,6 +67,10 @@ open class Memory(val mem: ByteArray) {
         mem[address+1] = (value ushr 16).toByte()
         mem[address+2] = (value ushr 8).toByte()
         mem[address+3] = value.toByte()
+    }
+
+    fun load(address: Int, data: ByteArray) {
+        data.copyInto(mem, address, 0, data.size)
     }
 
     // callbacks, auto wired by JNA:

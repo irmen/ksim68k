@@ -13,7 +13,7 @@ class MappedIoMemory(ksim68k.Memory):
 keep_running = True
 
 
-def pc_jump_handler(address: int) -> None:
+def pc_jump_handler(address: int):
     if address == TRAP15_ADDR:
         global keep_running
         keep_running = False
