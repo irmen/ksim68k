@@ -3,20 +3,7 @@ import pytest
 import ksim68k
 
 
-def setup_function(function):
-    ksim68k.init(ksim68k.Cpu.M68030)
-
-
-@pytest.fixture
-def memory():
-    return MemoryForTest(0x10000)
-
-
-def read_test_data(filename):
-    if os.path.exists(filename):
-        return open(filename, "rb").read()
-    else:
-        return open("tests/"+filename, "rb").read()
+memory = ksim68k.Memory(0)
 
 
 class MemoryForTest(ksim68k.Memory):
@@ -50,13 +37,21 @@ class MemoryForTest(ksim68k.Memory):
         super().write32(address, value)
 
 
-def test_basics():
-    assert ksim68k.cycles_remaining() == 0
-    assert ksim68k.cycles_run() == 0
-
-
-def test_disassem(memory: MemoryForTest):
+def setup_function(function):
+    ksim68k.init(ksim68k.Cpu.M68030)
+    global memory
+    memory = MemoryForTest(0x10000)
     ksim68k.use_memory(memory)
+
+
+def read_test_data(filename):
+    if os.path.exists(filename):
+        return open(filename, "rb").read()
+    else:
+        return open("tests/"+filename, "rb").read()
+
+
+def test_disassem():
     memory.write32(0, 0x12345678)
     memory.write32(4, 0xaabbccdd)
     disassem, length = ksim68k.disassemble(0, ksim68k.Cpu.M68030)
@@ -64,10 +59,9 @@ def test_disassem(memory: MemoryForTest):
     assert disassem == "move.b  ($78,A4,D5.w*8), D1"
 
 
-def test_reset_pulse(memory: MemoryForTest):
+def test_reset_pulse():
     memory.data[0:4] = [0x11, 0x22, 0x33, 0x44]     # stack pointer
     memory.data[4:8] = [0xaa, 0xbb, 0xcc, 0xdd]     # program counter
-    ksim68k.use_memory(memory)
     ksim68k.pulse_reset()
     sp = ksim68k.get_reg(ksim68k.Register.SP)
     a7 = ksim68k.get_reg(ksim68k.Register.A7)
@@ -79,7 +73,7 @@ def test_reset_pulse(memory: MemoryForTest):
     assert pc == 0xaabbccdd
 
 
-def test_reset_callback(memory: MemoryForTest):
+def test_reset_callback():
     handler_called = False
     def handler():
         nonlocal handler_called
@@ -87,20 +81,32 @@ def test_reset_callback(memory: MemoryForTest):
     memory.write32(0, 0x5000)   # stack pointer
     memory.write32(4, 0x2000)   # program counter
     memory.write16(0x2000, 0x4e70)       # reset instruction
-    ksim68k.use_memory(memory)
-    ksim68k.use_reset_handler(handler)
+    ksim68k.reset_handler = handler
     ksim68k.pulse_reset()
     ksim68k.execute(5)
     assert handler_called
 
 
-def test_execute(memory: MemoryForTest):
+def test_execute():
     memory.write32(0, 0x00001234)   # stack pointer
-    memory.write32(4, 0x0000abcd)   # program counter
-    ksim68k.use_memory(memory)
+    memory.write32(4, 0x0000abc0)   # program counter
+    memory.write16(0x0000abc0, 0x4e71)       # NOP instruction
+    memory.write16(0x0000abc2, 0x4e71)       # NOP instruction
+    memory.write16(0x0000abc4, 0x4e71)       # NOP instruction
+    memory.write16(0x0000abc6, 0x4e71)       # NOP instruction
+    memory.write16(0x0000abc8, 0x4e71)       # NOP instruction
+    memory.write16(0x0000abca, 0x4e71)       # NOP instruction
+    memory.write16(0x0000abcc, 0x4e71)       # NOP instruction
+    memory.write16(0x0000abce, 0x4e71)       # NOP instruction
     ksim68k.pulse_reset()
-    cycles = ksim68k.execute(20)
-    assert cycles == 16
+    reg_pc = ksim68k.get_reg(ksim68k.Register.PC)
+    reg_sp = ksim68k.get_reg(ksim68k.Register.SP)
+    assert reg_pc == 0xabc0
+    assert reg_sp == 0x1234
+    cycles = ksim68k.execute(8)
+    assert cycles == 4
+    cycles = ksim68k.execute(8)
+    assert cycles == 8
     reg_a0 = ksim68k.get_reg(ksim68k.Register.A0)
     reg_a7 = ksim68k.get_reg(ksim68k.Register.A7)
     reg_d0 = ksim68k.get_reg(ksim68k.Register.D0)
@@ -110,12 +116,12 @@ def test_execute(memory: MemoryForTest):
     assert reg_a0 == 0
     assert reg_d0 == 0
     assert reg_sp == 0x00001234
-    assert reg_pc == 0x0000abed
+    assert reg_pc == 0x0000abcc
     assert reg_a7 == reg_sp
     assert reg_sr == 0b0010011100000100
 
 
-def test_illegalinstr_handler(memory: MemoryForTest):
+def test_illegalinstr_handler():
     old_handler = ksim68k.illegalinstr_handler
     illegal_found = False
     def handler(opcode):
@@ -127,7 +133,6 @@ def test_illegalinstr_handler(memory: MemoryForTest):
         memory.write32(4, 0x00001000)    # program counter
         memory.write32(16, 0x0022334455)    # illegal instruction vector
         memory.write16(0x1000, 0x4afc)   # ILLEGAL instruction
-        ksim68k.use_memory(memory)
         ksim68k.pulse_reset()
         ksim68k.execute(6)
         ir = ksim68k.get_reg(ksim68k.Register.IR)
@@ -139,12 +144,11 @@ def test_illegalinstr_handler(memory: MemoryForTest):
         ksim68k.illegalinstr_handler = old_handler
 
 
-def test_stopinstruction_behavior(memory: MemoryForTest):
+def test_stopinstruction_behavior():
     memory.write32(0, 0x00002000)    # stack pointer
     memory.write32(4, 0x00001000)    # program counter
     memory.write16(0x1000, 0x4e72)   # STOP instruction
     memory.write16(0x1002, 0x2700)   # sr argument
-    ksim68k.use_memory(memory)
     ksim68k.pulse_reset()
     ksim68k.execute(20)
     ir = ksim68k.get_reg(ksim68k.Register.IR)

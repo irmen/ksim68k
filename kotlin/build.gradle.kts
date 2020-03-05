@@ -30,6 +30,24 @@ dependencies {
     // Use the Kotlin test library.
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 
+    // Use the Kotlin JUnit5 integration.
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.4.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.4.0")
+
     // Use the Kotlin JUnit integration.
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
+}
+
+tasks {
+    named<Test>("test") {
+        useJUnitPlatform()
+        dependsOn("cleanTest")
+        testLogging.events("failed")
+
+        // parallel tests disabled
+        systemProperty("junit.jupiter.execution.parallel.enabled", "false")
+        systemProperty("junit.jupiter.execution.parallel.mode.default", "same_thread")
+        maxParallelForks = 1
+    }
 }

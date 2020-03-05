@@ -201,11 +201,6 @@ def use_memory(mem: Memory) -> None:
     memory = mem
 
 
-def use_reset_handler(handler: Callable[[], None]) -> None:
-    global reset_handler
-    reset_handler = handler
-
-
 def execute(num_cycles: int) -> int:
     """execute num_cycles worth of instructions.  returns number of cycles used"""
     return lib.m68k_execute(num_cycles)

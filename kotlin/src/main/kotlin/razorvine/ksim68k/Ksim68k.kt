@@ -59,35 +59,42 @@ object Ksim68k {
     private val musashi = MusashiNative.INSTANCE
 
     // functions:
-    fun init() = musashi.m68k_init()
-    fun set_cpu_type(cpu: Cpu) = musashi.m68k_set_cpu_type(cpu.ordinal)
-    fun pulse_reset() = musashi.m68k_pulse_reset()
-    fun execute(num_cycles: Int) = musashi.m68k_execute(num_cycles)
-    fun cycles_run() = musashi.m68k_cycles_run()
-    fun cycles_remaining() = musashi.m68k_cycles_remaining()
-    fun modify_timeslice(cycles: Int) = musashi.m68k_modify_timeslice(cycles)
-    fun end_timeslice() = musashi.m68k_end_timeslice()
-    fun set_irq(int_level: Int) = musashi.m68k_set_irq(int_level)
-    fun set_virq(level: Int, active: Int) = musashi.m68k_set_virq(level, active)
-    fun get_virq(level: Int): Int = musashi.m68k_get_virq(level)
-    fun pulse_halt() = musashi.m68k_pulse_halt()
-    fun pulse_bus_error() = musashi.m68k_pulse_bus_error()
-    fun context_size(): Int = musashi.m68k_context_size()
-    fun get_reg(context: Buffer?, reg: Register): Int = musashi.m68k_get_reg(context, reg.ordinal)
-    fun set_reg(reg: Register, value: Int) = musashi.m68k_set_reg(reg.ordinal, value)
-    fun is_valid_instruction(instruction: Int, cpu: Cpu = Cpu.M68000): Boolean = musashi.m68k_is_valid_instruction(instruction, cpu.ordinal)
-    fun get_context(ctx: Buffer): Int = musashi.m68k_get_context(ctx)
-    fun set_context(ctx: Buffer) = musashi.m68k_set_context(ctx)
-    fun disassemble(str_buff: ByteArray, pc: Int, cpu: Cpu = Cpu.M68000): Int {
-        val instruction_size = musashi.m68k_disassemble(str_buff, pc, cpu.ordinal)
-        return instruction_size
+    fun init(cpu: Cpu) {
+        musashi.m68k_set_cpu_type(cpu.ordinal)
+        musashi.m68k_init()
     }
-    fun disassemble_raw(str_buff: ByteArray, pc: Int, opdata: ByteArray, argdata: ByteArray, cpu: Cpu = Cpu.M68000): Int {
-        val instruction_size = musashi.m68k_disassemble_raw(str_buff, pc, opdata, argdata, cpu.ordinal)
-        return instruction_size
+    fun setCpuType(cpu: Cpu) = musashi.m68k_set_cpu_type(cpu.ordinal)
+    fun pulseReset() = musashi.m68k_pulse_reset()
+    fun execute(num_cycles: Int) = musashi.m68k_execute(num_cycles)
+    fun cyclesRun() = musashi.m68k_cycles_run()
+    fun cyclesRemaining() = musashi.m68k_cycles_remaining()
+    fun modifyTimeslice(cycles: Int) = musashi.m68k_modify_timeslice(cycles)
+    fun endTimeslice() = musashi.m68k_end_timeslice()
+    fun setIrq(int_level: Int) = musashi.m68k_set_irq(int_level)
+    fun setVirq(level: Int, active: Int) = musashi.m68k_set_virq(level, active)
+    fun getVirq(level: Int): Int = musashi.m68k_get_virq(level)
+    fun pulseHalt() = musashi.m68k_pulse_halt()
+    fun pulseBusError() = musashi.m68k_pulse_bus_error()
+    fun contextSize(): Int = musashi.m68k_context_size()
+    fun getReg(reg: Register, context: Buffer? = null): Long = musashi.m68k_get_reg(context, reg.ordinal).toLong() and 0xffffffff
+    fun getRegSgn(reg: Register, context: Buffer? = null): Int = musashi.m68k_get_reg(context, reg.ordinal)
+    fun setReg(reg: Register, value: Long) = musashi.m68k_set_reg(reg.ordinal, value.toInt())
+    fun setRegSgn(reg: Register, value: Int) = musashi.m68k_set_reg(reg.ordinal, value)
+    fun isValidInstruction(instruction: Int, cpu: Cpu = Cpu.M68000): Boolean = musashi.m68k_is_valid_instruction(instruction, cpu.ordinal)
+    fun getContext(ctx: Buffer): Int = musashi.m68k_get_context(ctx)
+    fun setContext(ctx: Buffer) = musashi.m68k_set_context(ctx)
+    fun disassemble(pc: Int, cpu: Cpu = Cpu.M68000): Pair<String, Int> {
+        val buff = ByteArray(100)
+        val instrSize = musashi.m68k_disassemble(buff, pc, cpu.ordinal)
+        return Pair(String(buff, 0, buff.indexOf(0)), instrSize)
+    }
+    fun disassembleRaw(pc: Int, opdata: ByteArray, argdata: ByteArray, cpu: Cpu = Cpu.M68000): Pair<String, Int> {
+        val buff = ByteArray(100)
+        val instrSize = musashi.m68k_disassemble_raw(buff, pc, opdata, argdata, cpu.ordinal)
+        return Pair(String(buff, 0, buff.indexOf(0)), instrSize)
     }
 
-    fun use_memory(memory: Memory) {
+    fun useMemory(memory: Memory) {
         memory.registerCallbacks(musashi)
     }
 
