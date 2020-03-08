@@ -49,5 +49,8 @@ tasks {
         systemProperty("junit.jupiter.execution.parallel.enabled", "false")
         systemProperty("junit.jupiter.execution.parallel.mode.default", "same_thread")
         maxParallelForks = 1
+	exec {
+		commandLine("python", "copynativelib.py")
+	}
     }
 }

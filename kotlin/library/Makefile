@@ -11,8 +11,8 @@ libmusashi.so:  $(MUSASHISRC)/m68kconf.h $(MUSASHISRC)/m68kcpu.o $(MUSASHISRC)/m
 	gcc -shared -o libmusashi.so $^
 
 
-copylib:
-	cp libmusashi.so src/main/resources/linux-x86-64/
+copylib: libmusashi.so
+	python copynativelib.py
 
 
 $(MUSASHISRC)/m68kcpu.o: $(MUSASHISRC)/m68kconf.h $(MUSASHISRC)/m68kcpu.c
