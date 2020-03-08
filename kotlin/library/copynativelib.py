@@ -2,7 +2,7 @@
 import subprocess
 import shutil
 
-arch = subprocess.check_output("arch").strip()
+arch = subprocess.check_output(["uname", "-m"]).decode().strip()
 if arch.startswith("arm"):
     arch = "arm"
 arch = arch.replace("powerpc", "ppc")
