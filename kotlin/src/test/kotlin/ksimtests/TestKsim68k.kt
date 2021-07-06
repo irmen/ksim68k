@@ -114,9 +114,9 @@ class TestKsim68k {
 
     @Test
     fun testResetCallback() {
-        var handler_called = false
+        var handlerCalled = false
         fun handler() {
-            handler_called = true
+            handlerCalled = true
         }
         memory.write32(0, 0x5000)   // stack pointer
         memory.write32(4, 0x2000)   // program counter
@@ -126,7 +126,7 @@ class TestKsim68k {
         try {
             Ksim68k.pulseReset()
             Ksim68k.execute(5)
-            assertTrue(handler_called)
+            assertTrue(handlerCalled)
         } finally {
             Ksim68k.handlerForResetInstruction = oldHandler
         }
@@ -244,7 +244,7 @@ class TestKsim68k {
             override fun write8(address: Int, value: Short) {
                 if (address == 0x00fff002) {
                     // memory mapped chrout register
-                    output += value.toChar()
+                    output += value.toInt().toChar()
                 }
             }
         }

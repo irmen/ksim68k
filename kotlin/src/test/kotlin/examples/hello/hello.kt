@@ -1,4 +1,4 @@
-package hello
+package examples.hello
 
 import razorvine.ksim68k.Cpu
 import razorvine.ksim68k.Ksim68k
@@ -13,7 +13,7 @@ const val TRAP15_ADDR = 0x000ff222        // "end program" trap
 class MappedIoMemory(size: Int) : Memory(size) {
     override fun write8(address: Int, value: Short) {
         if(address== CHROUT)
-            print(value.toChar())
+            print(value.toInt().toChar())
     }
 }
 

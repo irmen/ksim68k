@@ -1,4 +1,4 @@
-package disassemble
+package examples.disassemble
 
 import razorvine.ksim68k.Ksim68k
 import java.io.File
