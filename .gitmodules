@@ -1,0 +1,6 @@
+[submodule "python/Musashi"]
+	path = python/Musashi
+	url = https://github.com/kstenerud/Musashi.git
+[submodule "kotlin/src/main/c/Musashi"]
+	path = kotlin/src/main/c/Musashi
+	url = https://github.com/kstenerud/Musashi.git

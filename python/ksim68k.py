@@ -4,7 +4,7 @@ from typing import Optional, Tuple
 
 from _musashi import ffi, lib
 
-__version__ = "1.0"
+__version__ = "1.1"
 
 
 class Cpu(enum.Enum):
