@@ -20,5 +20,5 @@ if __name__ == "__main__":
         py_modules=["ksim68k"],
         install_requires=["cffi>=1.11.0"],
         setup_requires=["cffi>=1.11.0"],
-        python_requires=">=3.6"
+        python_requires=">=3.8"
     )
