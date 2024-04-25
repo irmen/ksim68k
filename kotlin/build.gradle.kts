@@ -2,10 +2,9 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     // Apply the Kotlin JVM plugin to add support for Kotlin on the JVM.
-    kotlin("jvm") version "1.9.10"
+    kotlin("jvm") version "1.9.22"
     application
     `java-library`
-    id("com.jfrog.bintray") version "1.8.4"
 }
 
 java {

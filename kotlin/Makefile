@@ -3,7 +3,7 @@
 
 CSRCDIR=src/main/c
 MUSASHISRC=$(CSRCDIR)/Musashi
-CFLAGS=-O3 -fPIC -Wall
+CFLAGS=-O3 -fPIC -Wall -march=native -mtune=native
 
 all:  libmusashi.so  copylib
 
