@@ -5,6 +5,8 @@
 #ifndef M68KCONF__HEADER
 #define M68KCONF__HEADER
 
+void cpu_pc_changed_handler(unsigned int address);
+void cpu_reset_handler();
 
 #define OPT_OFF             0
 #define OPT_ON              1
