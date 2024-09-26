@@ -2,14 +2,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     // Apply the Kotlin JVM plugin to add support for Kotlin on the JVM.
-    kotlin("jvm") version "1.9.24"
-    application
+    kotlin("jvm") version "2.0.20"
     `java-library`
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
 }
 
 repositories {
@@ -40,12 +34,11 @@ dependencies {
     }
 }
 
+kotlin {
+    jvmToolchain(17)
+}
+
 tasks {
-
-    withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "11"
-    }
-
     named<Test>("test") {
         useJUnitPlatform()
         dependsOn("cleanTest")
