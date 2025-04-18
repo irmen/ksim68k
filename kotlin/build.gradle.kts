@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     // Apply the Kotlin JVM plugin to add support for Kotlin on the JVM.
-    kotlin("jvm") version "2.0.20"
+    kotlin("jvm") version "2.1.20"
     `java-library`
 }
 
@@ -27,7 +27,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.4.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.4.0")
 
-    implementation("net.java.dev.jna:jna:5.5.0")
+    implementation("net.java.dev.jna:jna:5.17.0")
 
     subprojects.forEach {
         implementation(it)
@@ -48,7 +48,7 @@ tasks {
         systemProperty("junit.jupiter.execution.parallel.enabled", "false")
         systemProperty("junit.jupiter.execution.parallel.mode.default", "same_thread")
         maxParallelForks = 1
-	exec {
+	providers.exec {
 		commandLine("python", "copynativelib.py")
 	}
     }
