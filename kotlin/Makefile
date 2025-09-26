@@ -8,6 +8,8 @@ CFLAGS=-O3 -fPIC -Wall -march=native -mtune=native
 all:  libmusashi.so  copylib
 
 clean:
+	rm -f *.o *.so
+	rm -fv src/main/resources/linux*/*.so
 	make -C src/main/c/Musashi clean
 
 libmusashi.so:  m68kconf_custom.h $(MUSASHISRC)/m68kcpu.o $(MUSASHISRC)/m68kdasm.o $(MUSASHISRC)/m68kops.o $(MUSASHISRC)/softfloat/softfloat.o $(CSRCDIR)/memreadwrite.o

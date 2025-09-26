@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     // Apply the Kotlin JVM plugin to add support for Kotlin on the JVM.
-    kotlin("jvm") version "2.1.20"
+    kotlin("jvm") version "2.2.20"
     `java-library`
 }
 
@@ -24,10 +24,10 @@ dependencies {
 
     // Use the Kotlin JUnit5 integration.
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.4.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.4.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.1")
 
-    implementation("net.java.dev.jna:jna:5.17.0")
+    implementation("net.java.dev.jna:jna:5.18.0")
 
     subprojects.forEach {
         implementation(it)

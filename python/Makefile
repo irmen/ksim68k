@@ -4,8 +4,8 @@ all:
 	@echo "Targets:  test, dist, win_wheels, linux_wheel, check_upload, upload"
 
 test:
-	rm -f *.so
-	python setup.py build test
+	rm -rf build *.so
+	python setup.py build 
 	python -m pytest tests
 
 win_wheels: test

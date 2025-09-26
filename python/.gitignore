@@ -1,5 +1,6 @@
 # FFI Builds
 *.so
+*.o
 
 # Virtual enviroment
 /.venv/
@@ -25,3 +26,5 @@ build
 dist
 *.egg-info/
 .directory
+_musashi.c
+
