@@ -222,7 +222,7 @@ void cpu_pc_changed_handler(unsigned int address) {
                           "Musashi/m68kops.c",
                           "Musashi/softfloat/softfloat.c"
                       ],
-                      include_dirs=["Musashi", "."],
+                      include_dirs=["Musashi", "Musashi/softfloat", "."],
                       libraries=libraries,
                       define_macros=[("MUSASHI_CNF", '"m68kconf_custom.h"')],
                       extra_compile_args=compiler_args)
